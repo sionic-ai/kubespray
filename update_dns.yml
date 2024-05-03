@@ -1,0 +1,15 @@
+---
+- name: Update DNS settings in systemd-resolved
+  hosts: all
+  become: yes  # 관리자 권한으로 실행
+  tasks:
+    - name: Insert DNS settings under [Resolve] section
+      lineinfile:
+        path: /etc/systemd/resolved.conf
+        insertafter: '^\[Resolve\]$'  # [Resolve] 섹션을 찾는 정규 표현식
+        line: 'DNS=169.254.25.10 10.0.0.1'
+        state: present
+    - name: Restart systemd-resolved service
+      systemd:
+        name: systemd-resolved
+        state: restarted
