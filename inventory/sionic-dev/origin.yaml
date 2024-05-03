@@ -12,10 +12,6 @@ all:
       ansible_host: 10.0.0.53
       ip: 10.0.0.53
       access_ip: 10.0.0.53
-    worker1:
-      ansible_host: 10.0.0.101
-      ip: 10.0.0.101
-      access_ip: 10.0.0.101
     worker2:
       ansible_host: 10.0.0.102
       ip: 10.0.0.102
@@ -48,7 +44,6 @@ all:
         master3:
     kube_node:
       hosts:
-        worker1:
         worker2:
         worker10:
         worker11:
