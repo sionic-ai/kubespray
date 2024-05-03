@@ -1,0 +1,24 @@
+- name: Copy iSCSI configuration files to all worker nodes
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install iscsiadm install
+      command: apt-get -y install open-iscsi
+    - name: install nfs
+      command: apt-get install -y nfs-common
+    - name: Copy /etc/iscsi/initiatorname.iscsi to workers
+      ansible.builtin.copy:
+        src: /etc/iscsi/initiatorname.iscsi
+        dest: /etc/iscsi/initiatorname.iscsi
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy /etc/iscsi/iscsid.conf to workers
+      ansible.builtin.copy:
+        src: /etc/iscsi/iscsid.conf
+        dest: /etc/iscsi/iscsid.conf
+        owner: root
+        group: root
+        mode: '0644'
+

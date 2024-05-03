@@ -1,0 +1,45 @@
+---
+- name: Install NVIDIA Container Toolkit and update config.toml
+  hosts: all
+  become: yes  # Required to gain root privileges
+  tasks:
+    - name: Add NVIDIA GPG key
+      ansible.builtin.shell: |
+        curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --batch --yes --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+      ignore_errors: yes
+
+    - name: Add NVIDIA repository
+      ansible.builtin.shell: |
+        curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+        sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+        sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+    - name: Enable experimental features in the NVIDIA repository
+      ansible.builtin.lineinfile:
+        path: /etc/apt/sources.list.d/nvidia-container-toolkit.list
+        regexp: '^#.*experimental'
+        line: 'deb [arch=amd64 signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/experimental/ubuntu18.04/$(ARCH) /'
+        backrefs: yes
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install NVIDIA container toolkit
+      ansible.builtin.apt:
+        name: nvidia-container-toolkit
+        state: present
+
+    - name: Copy containerd configuration file
+      ansible.builtin.copy:
+        src: ./containerd_config.toml
+        dest: /etc/containerd/config.toml
+        owner: root
+        group: root
+        mode: '0600'
+    - name: Restart containerd
+      ansible.builtin.systemd:
+        name: containerd
+        state: restarted     
+        daemon_reload: yes
+

@@ -1,0 +1,45 @@
+---
+- name: Install AWS CLI v2, rsync, and copy .aws directory
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600  # Cache is considered valid for 1 hour
+
+    - name: Install rsync on Ubuntu using apt-get
+      command: apt-get -y install rsync
+
+    - name: Download AWS CLI v2
+      get_url:
+        url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp/awscliv2.zip
+        mode: '0644'
+
+    - name: Unzip AWS CLI v2 installer
+      ansible.builtin.unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp
+        remote_src: yes
+
+    - name: Run the AWS CLI v2 installer with update option
+      command: /tmp/aws/install --update
+
+    - name: Ensure .aws directory exists
+      file:
+        path: /root/.aws
+        state: directory
+        mode: '0755'
+
+    - name: Copy .aws directory to remote
+      synchronize:
+        src: ~/.aws/
+        dest: /root/.aws/
+        mode: push
+        recursive: yes
+   
+    - name: Install iscsiadm install
+      command: apt-get -y install open-iscsi
+    - name: install nfs
+      command: apt-get install -y nfs-common
